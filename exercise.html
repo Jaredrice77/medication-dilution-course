@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medication Dilution Exercise</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #6c757d;
+        }
+        
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .weight-display {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .order-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+        }
+        
+        .dilution-link {
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .question {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .input-group input {
+            width: 200px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .result-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1b2b7;
+        }
+        
+        .completion-link {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .completion-link:hover {
+            background-color: #218838;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .refresh-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Medication Dilution Exercise</h1>
+    </div>
+    
+    <div class="section">
+        <h2>Patient Weight</h2>
+        <div class="weight-display" id="patientWeight">
+            ## <span id="weightValue">Loading...</span> g
+            <button class="refresh-btn" onclick="generateNewWeight()">New Patient</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Order</h2>
+        <div class="order-info">
+            <p><strong>Medication:</strong> FentaNYL (SUBLIMAZ) in NaCl 0.9% injection</p>
+            <p><strong>Ordered Dose:</strong> 1 mcg/kg/dose</p>
+            <p><strong>Dilution Instruction:</strong> Dilute 1 mL of fentanyl 10 mcg/mL with 9 mL of NS for 1 mcg/mL concentration</p>
+            <p><a href="http://app.pharmacy.ccf.org/apps/nicuccm/" target="_blank" class="dilution-link">Dilution Calculator</a></p>
+        </div>
+        
+        <p><strong>Instructions:</strong> Please answer the following questions. Once your answers are correct, please click the link to be marked as complete.</p>
+    </div>
+    
+    <form id="calculationForm">
+        <div class="question">
+            <h3>Question 1: What is the final drug dose?</h3>
+            <div class="input-group">
+                <label for="finalDose">Enter the final drug dose (mcg):</label>
+                <input type="number" id="finalDose" step="0.01" placeholder="Enter dose in mcg" required>
+            </div>
+        </div>
+        
+        <div class="question">
+            <h3>Question 2: What is the final drug volume?</h3>
+            <div class="input-group">
+                <label for="finalVolume">Enter the final drug volume (mL):</label>
+                <input type="number" id="finalVolume" step="0.01" placeholder="Enter volume in mL" required>
+            </div>
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit</button>
+    </form>
+    
+    <div id="resultMessage" class="result-message">
+        <div id="messageContent"></div>
+    </div>
+
+    <script>
+        let currentWeight = 0;
+        
+        // Generate random weight between 450-999 grams
+        function generateRandomWeight() {
+            return Math.floor(Math.random() * (999 - 450 + 1)) + 450;
+        }
+        
+        // Initialize page with random weight
+        function initializePage() {
+            currentWeight = generateRandomWeight();
+            document.getElementById('weightValue').textContent = currentWeight;
+        }
+        
+        // Generate new weight (for new patient button)
+        function generateNewWeight() {
+            currentWeight = generateRandomWeight();
+            document.getElementById('weightValue').textContent = currentWeight;
+            
+            // Clear previous inputs and results
+            document.getElementById('finalDose').value = '';
+            document.getElementById('finalVolume').value = '';
+            document.getElementById('resultMessage').style.display = 'none';
+        }
+        
+        // Calculate correct answers
+        function calculateCorrectAnswers(weightInGrams) {
+            const weightInKg = weightInGrams / 1000;
+            const dose = weightInKg * 1; // 1 mcg/kg
+            const volume = dose / 1; // divided by 1 mcg/mL concentration
+            
+            return {
+                dose: Math.round(dose * 100) / 100, // Round to 2 decimal places
+                volume: Math.round(volume * 100) / 100
+            };
+        }
+        
+        // Check if answers are within acceptable range (±5% tolerance)
+        function isAnswerCorrect(userAnswer, correctAnswer, tolerance = 0.05) {
+            const userNum = parseFloat(userAnswer);
+            const correctNum = parseFloat(correctAnswer);
+            const difference = Math.abs(userNum - correctNum);
+            const acceptableRange = correctNum * tolerance;
+            
+            return difference <= acceptableRange || difference <= 0.01; // Allow small rounding differences
+        }
+        
+        // Handle form submission
+        document.getElementById('calculationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userDose = document.getElementById('finalDose').value;
+            const userVolume = document.getElementById('finalVolume').value;
+            
+            if (!userDose || !userVolume) {
+                showMessage('Please fill in both answers before submitting.', 'error');
+                return;
+            }
+            
+            const correctAnswers = calculateCorrectAnswers(currentWeight);
+            const doseCorrect = isAnswerCorrect(userDose, correctAnswers.dose);
+            const volumeCorrect = isAnswerCorrect(userVolume, correctAnswers.volume);
+            
+            if (doseCorrect && volumeCorrect) {
+                showMessage(`
+                    <p><strong>Congratulations! Your calculations are correct.</strong></p>
+                    <p>Correct dose: ${correctAnswers.dose} mcg</p>
+                    <p>Correct volume: ${correctAnswers.volume} mL</p>
+                    <p>Please click the link below to record your completion:</p>
+                    <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=WvZ_z9bODECYVvysWP856Dc8AmJO8s9Jm9PymJOtI75UNExaMVBWTlhRNVQ3MTJCVTY1S1lHUzA3Ti4u" target="_blank" class="completion-link">
+                        Click Here to Record Completion →
+                    </a>
+                `, 'success');
+            } else {
+                let errorDetails = '<p><strong>Please try again.</strong></p>';
+                errorDetails += '<p>Check your calculations for:</p><ul>';
+                if (!doseCorrect) {
+                    errorDetails += `<li>Final drug dose (you entered: ${userDose} mcg)</li>`;
+                }
+                if (!volumeCorrect) {
+                    errorDetails += `<li>Final drug volume (you entered: ${userVolume} mL)</li>`;
+                }
+                errorDetails += '</ul>';
+                errorDetails += '<p><em>Remember: Weight in kg = weight in grams ÷ 1000<br>';
+                errorDetails += 'Dose = 1 mcg/kg × weight in kg<br>';
+                errorDetails += 'Volume = dose ÷ 1 mcg/mL</em></p>';
+                
+                showMessage(errorDetails, 'error');
+            }
+        });
+        
+        // Show result message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('resultMessage');
+            const contentDiv = document.getElementById('messageContent');
+            
+            contentDiv.innerHTML = message;
+            messageDiv.className = `result-message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Initialize page on load
+        window.addEventListener('load', initializePage);
+    </script>
+</body>
+</html>
